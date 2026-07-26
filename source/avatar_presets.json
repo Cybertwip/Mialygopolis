@@ -1,0 +1,125 @@
+{
+  "characters": [
+    {
+      "id": "aera", "family": "drophunter", "name": "AERA", "tagline": "CAZADORA DE BOTÍN / EXPLORADORA",
+      "manifest": "drophunter/manifest.json", "accent": [0.96, 0.31, 0.67],
+      "traits": {"body":"0","eyes":"regulareyes","head":"buns","chest":"croptop","legs":"cargopants","feet":"sneakers","outer":"shortjacket"},
+      "variants": {"body":0,"eyes":0,"head":8,"chest":0,"legs":0,"feet":0,"outer":0}
+    },
+    {
+      "id": "lyra", "family": "drophunter", "name": "LYRA", "tagline": "CAZADORA DE BOTÍN / CORREDORA",
+      "manifest": "drophunter/manifest.json", "accent": [0.76, 0.45, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"curledbangs","chest":"lightshirt","legs":"casualshorts","feet":"tennisshoes","outer":"halfjacket"},
+      "variants": {"body":4,"eyes":18,"head":18,"chest":2,"legs":3,"feet":4,"outer":2}
+    },
+    {
+      "id": "riven", "family": "drophunter", "name": "RIVEN", "tagline": "CAZADORA DE BOTÍN / VANGUARDIA",
+      "manifest": "drophunter/manifest.json", "accent": [1.0, 0.46, 0.18],
+      "traits": {"body":"0","eyes":"regulareyes","head":"dreds","chest":"tanktop","legs":"doublebeltpants","feet":"hightop","outer":"jacket"},
+      "variants": {"body":8,"eyes":11,"head":11,"chest":5,"legs":5,"feet":3,"outer":1}
+    },
+    {
+      "id": "nyra", "family": "drophunter", "name": "NYRA", "tagline": "CAZADORA DE BOTÍN / ASALTANTE",
+      "manifest": "drophunter/manifest.json", "accent": [0.20, 0.87, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"longspike","chest":"hoodie","legs":"skirt","feet":"shortboots"},
+      "variants": {"body":12,"eyes":29,"head":29,"chest":6,"legs":4,"feet":2}
+    },
+    {
+      "id": "maya", "family": "drophunter", "name": "MAYA", "tagline": "CAZADORA DE BOTÍN / EMISARIA",
+      "manifest": "drophunter/manifest.json", "accent": [1.0, 0.72, 0.22],
+      "traits": {"body":"0","eyes":"regulareyes","head":"ponytail","chest":"dress","feet":"designershoes","accessories":"hipbelt"},
+      "variants": {"body":16,"eyes":7,"head":43,"chest":1,"feet":6,"accessories":2}
+    },
+    {
+      "id": "kyra", "family": "drophunter", "name": "KYRA", "tagline": "CAZADORA DE BOTÍN / RASTREADORA",
+      "manifest": "drophunter/manifest.json", "accent": [0.35, 1.0, 0.55],
+      "traits": {"body":"0","eyes":"regulareyes","head":"short","chest":"sweater","legs":"sportshorts","feet":"thinshoe"},
+      "variants": {"body":1,"eyes":31,"head":2,"chest":3,"legs":2,"feet":5}
+    },
+    {
+      "id": "lune", "family": "drophunter", "name": "LUNE", "tagline": "CAZADORA DE BOTÍN / INFILTRADORA",
+      "manifest": "drophunter/manifest.json", "accent": [0.58, 0.62, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"shortband","chest":"tuckedshirt","legs":"waistshorts","feet":"dressboots","accessories":"legstrapandcompress"},
+      "variants": {"body":5,"eyes":24,"head":24,"chest":4,"legs":6,"feet":1,"accessories":5}
+    },
+    {
+      "id": "rhea", "family": "drophunter", "name": "RHEA", "tagline": "CAZADORA DE BOTÍN / PILOTO",
+      "manifest": "drophunter/manifest.json", "accent": [0.22, 0.78, 0.92],
+      "traits": {"body":"0","eyes":"regulareyes","head":"shortcurve","chest":"jumpsuittop","legs":"jumpsuitpants","feet":"designertallboots"},
+      "variants": {"body":9,"eyes":20,"head":20,"chest":2,"legs":2,"feet":2}
+    },
+    {
+      "id": "iris", "family": "drophunter", "name": "IRIS", "tagline": "CAZADORA DE BOTÍN / TÉCNICA",
+      "manifest": "drophunter/manifest.json", "accent": [0.82, 0.48, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"straight","chest":"shirt","legs":"abovekneeshorts","feet":"dressboots2","outer":"halfjacket"},
+      "variants": {"body":13,"eyes":14,"head":14,"chest":6,"legs":1,"feet":6,"outer":5}
+    },
+    {
+      "id": "aure", "family": "drophunter", "name": "AURE", "tagline": "CAZADORA DE BOTÍN / COMANDANTE",
+      "manifest": "drophunter/manifest.json", "accent": [1.0, 0.36, 0.42],
+      "traits": {"body":"0","eyes":"regulareyes","head":"swept","chest":"fulljacket","feet":"tallboots"},
+      "variants": {"body":17,"eyes":9,"head":9,"chest":4,"feet":4}
+    },
+
+    {
+      "id": "kael", "family": "neurohacker", "name": "KAEL", "tagline": "NEUROHACKER / OPERADOR",
+      "manifest": "neurohacker/manifest.json", "accent": [0.20, 0.87, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hair1","chest":"combatvest","legs":"cargopants","feet":"boots","accessories":"combatgloves"},
+      "variants": {"body":0,"eyes":0,"head":30,"chest":0,"legs":0,"feet":0,"accessories":1}
+    },
+    {
+      "id": "ario", "family": "neurohacker", "name": "ARIO", "tagline": "NEUROHACKER / MENSAJERO",
+      "manifest": "neurohacker/manifest.json", "accent": [0.42, 0.72, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hair2","chest":"logotee","legs":"cargoshorts","feet":"runningshoes","outer":"longjacket"},
+      "variants": {"body":4,"eyes":12,"head":12,"chest":3,"legs":3,"feet":3,"outer":3}
+    },
+    {
+      "id": "dael", "family": "neurohacker", "name": "DAEL", "tagline": "NEUROHACKER / ANALISTA",
+      "manifest": "neurohacker/manifest.json", "accent": [0.36, 1.0, 0.72],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hair3","chest":"simpleshirt","legs":"streetpants","feet":"simpleshoes","outer":"longjacket"},
+      "variants": {"body":8,"eyes":25,"head":25,"chest":6,"legs":6,"feet":6,"outer":6}
+    },
+    {
+      "id": "sylv", "family": "neurohacker", "name": "SYLV", "tagline": "NEUROHACKER / SABOTEADOR",
+      "manifest": "neurohacker/manifest.json", "accent": [0.80, 0.34, 1.0],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hair4","chest":"slottedshirt","legs":"tightjeans","feet":"sinchboots","accessories":"ninjagloves"},
+      "variants": {"body":12,"eyes":16,"head":16,"chest":4,"legs":4,"feet":4,"accessories":4}
+    },
+    {
+      "id": "ren", "family": "neurohacker", "name": "REN", "tagline": "NEUROHACKER / FANTASMA",
+      "manifest": "neurohacker/manifest.json", "accent": [0.65, 0.68, 0.84],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hair5","chest":"sweater","legs":"workingpants","feet":"shroudedboots","outer":"robe"},
+      "variants": {"body":16,"eyes":7,"head":7,"chest":2,"legs":2,"feet":2,"outer":2}
+    },
+    {
+      "id": "sariel", "family": "neurohacker", "name": "SARIEL", "tagline": "NEUROHACKER / DIPLOMÁTICO",
+      "manifest": "neurohacker/manifest.json", "accent": [1.0, 0.58, 0.28],
+      "traits": {"body":"0","eyes":"regulareyes","head":"braided","chest":"dressjacket","legs":"suitpants","feet":"dressshoes","accessories":"beltandbag"},
+      "variants": {"body":1,"eyes":34,"head":34,"chest":5,"legs":5,"feet":5,"accessories":5}
+    },
+    {
+      "id": "saeros", "family": "neurohacker", "name": "SAEROS", "tagline": "NEUROHACKER / CENTINELA",
+      "manifest": "neurohacker/manifest.json", "accent": [1.0, 0.30, 0.30],
+      "traits": {"body":"0","eyes":"regulareyes","head":"short","chest":"fancysuit","feet":"fantasyboots","accessories":"bandolier"},
+      "variants": {"body":5,"eyes":10,"head":10,"chest":1,"feet":1,"accessories":1}
+    },
+    {
+      "id": "rhen", "family": "neurohacker", "name": "RHEN", "tagline": "NEUROHACKER / MAGO URBANO",
+      "manifest": "neurohacker/manifest.json", "accent": [0.78, 0.38, 0.92],
+      "traits": {"body":"0","eyes":"regulareyes","head":"hairshort","chest":"streetware","feet":"hikingboots","accessories":"chestrig"},
+      "variants": {"body":9,"eyes":18,"head":18,"chest":4,"feet":4,"accessories":4}
+    },
+    {
+      "id": "auriel", "family": "neurohacker", "name": "AURIEL", "tagline": "NEUROHACKER / ARQUITECTO",
+      "manifest": "neurohacker/manifest.json", "accent": [0.98, 0.72, 0.24],
+      "traits": {"body":"0","eyes":"regulareyes","head":"straight","chest":"fulljacket","feet":"tallboots","accessories":"fingergloves"},
+      "variants": {"body":13,"eyes":31,"head":31,"chest":6,"feet":6,"accessories":6}
+    },
+    {
+      "id": "myrell", "family": "neurohacker", "name": "MYRELL", "tagline": "NEUROHACKER / GUARDIÁN",
+      "manifest": "neurohacker/manifest.json", "accent": [0.24, 0.94, 0.78],
+      "traits": {"body":"0","eyes":"regulareyes","head":"straightdown","chest":"dressrobe","feet":"strapedboots","accessories":"legbandages"},
+      "variants": {"body":17,"eyes":22,"head":22,"chest":2,"feet":2,"accessories":2}
+    }
+  ]
+}
