@@ -1,0 +1,3 @@
+[submodule "3rdparty/character-assets"]
+	path = 3rdparty/character-assets
+	url = git@github.com:memelotsqui/character-assets.git
