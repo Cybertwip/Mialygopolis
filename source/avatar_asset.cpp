@@ -179,6 +179,11 @@ bool AvatarAsset::upload(std::string& error)
         attribute(8, 3, offsetof(AvatarVertex, runANormal));
         attribute(9, 3, offsetof(AvatarVertex, runBPosition));
         attribute(10, 3, offsetof(AvatarVertex, runBNormal));
+        attribute(11, 3, offsetof(AvatarVertex, wavePosition));
+        attribute(12, 3, offsetof(AvatarVertex, waveNormal));
+        attribute(13, 3, offsetof(AvatarVertex, cheerPosition));
+        attribute(14, 3, offsetof(AvatarVertex, cheerNormal));
+        attribute(15, 3, offsetof(AvatarVertex, dancePosition));
 
         if (!primitive.imageBytes.empty()) {
             primitive.texture = loadTextureBytes(primitive.imageBytes.data(), static_cast<int>(primitive.imageBytes.size()), error);

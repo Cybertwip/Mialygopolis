@@ -72,6 +72,7 @@ public:
     void randomize();
 
     void setMoveInput(float forward, float strafe, bool running, float viewYaw);
+    void setPlayerPosition(const Vec3& position) { player_.position = position; }
     void update(float deltaSeconds);
 
 private:

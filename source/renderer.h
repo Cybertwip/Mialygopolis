@@ -6,6 +6,7 @@
 #include "game_session.h"
 #include "math_types.h"
 #include "multiplayer_client.h"
+#include "npc_system.h"
 #include "ui_renderer.h"
 #include "voxel_world.h"
 
@@ -30,8 +31,10 @@ public:
                      bool chatActive, const std::string& chatInput,
                      float timeSeconds, int width, int height);
     void renderWorld(const CharacterLoadout& loadout, const PlayerState& player,
-                     const MultiplayerSnapshot& multiplayer, int selectedWorld,
-                     bool chatActive, const std::string& chatInput, float cameraYaw, float cameraDistance,
+                     const MultiplayerSnapshot& multiplayer, const NpcSystem& npcSystem,
+                     int selectedWorld, bool chatActive, const std::string& chatInput,
+                     float cameraYaw, float cameraDistance,
+                     int action, float actionTime,
                      float timeSeconds, int width, int height);
 
     bool capturePng(const std::filesystem::path& path, int width, int height, std::string& error) const;
@@ -42,11 +45,12 @@ private:
     void drawWorld(const Mat4& view, const Mat4& projection, const Vec3& cameraPosition);
     void drawLoadout(const CharacterLoadout& loadout, const Mat4& model, const Mat4& view,
                      const Mat4& projection, const Vec3& cameraPosition,
-                     float accentMix, float phase, float motion);
+                     float accentMix, float phase, float motion,
+                     int action, float actionWeight);
     void drawClassSelectorUi(const M3DSession* session, int width, int height);
     void drawCustomizerUi(const M3DSession* session, int width, int height);
     void drawLobbyUi(const M3DSession* session, const MultiplayerSnapshot& multiplayer, int selectedWorld, bool chatActive, const std::string& chatInput, int width, int height);
-    void drawWorldUi(const CharacterLoadout& loadout, const PlayerState& player, const MultiplayerSnapshot& multiplayer, int selectedWorld, bool chatActive, const std::string& chatInput, int width, int height);
+    void drawWorldUi(const CharacterLoadout& loadout, const PlayerState& player, const MultiplayerSnapshot& multiplayer, const NpcSystem& npcSystem, int selectedWorld, bool chatActive, const std::string& chatInput, int width, int height);
     void drawChatUi(const MultiplayerSnapshot& multiplayer, bool chatActive, const std::string& chatInput, int width, int height, float scale);
 
     GLuint worldProgram_ = 0;

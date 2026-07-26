@@ -171,8 +171,11 @@ layout(location=3) in vec3 a_walk_a_position; layout(location=4) in vec3 a_walk_
 layout(location=5) in vec3 a_walk_b_position; layout(location=6) in vec3 a_walk_b_normal;
 layout(location=7) in vec3 a_run_a_position; layout(location=8) in vec3 a_run_a_normal;
 layout(location=9) in vec3 a_run_b_position; layout(location=10) in vec3 a_run_b_normal;
+layout(location=11) in vec3 a_wave_position; layout(location=12) in vec3 a_wave_normal;
+layout(location=13) in vec3 a_cheer_position; layout(location=14) in vec3 a_cheer_normal;
+layout(location=15) in vec3 a_dance_position;
 uniform mat4 u_model; uniform mat4 u_view; uniform mat4 u_projection;
-uniform float u_phase; uniform float u_motion;
+uniform float u_phase; uniform float u_motion; uniform int u_action; uniform float u_action_weight;
 out vec3 v_world_position; out vec3 v_normal; out vec2 v_uv;
 void main(){
  float wave=sin(u_phase); float wa=max(wave,0.0); float wb=max(-wave,0.0);
@@ -183,6 +186,9 @@ void main(){
  float walkMix=clamp(u_motion,0.0,1.0); float runMix=clamp(u_motion-1.0,0.0,1.0);
  vec3 p=mix(a_position,walkP,walkMix); p=mix(p,runP,runMix);
  vec3 n=normalize(mix(a_normal,walkN,walkMix)); n=normalize(mix(n,runN,runMix));
+ if(u_action==1){p=mix(p,a_wave_position,u_action_weight);n=normalize(mix(n,a_wave_normal,u_action_weight));}
+ else if(u_action==2){p=mix(p,a_cheer_position,u_action_weight);n=normalize(mix(n,a_cheer_normal,u_action_weight));}
+ else if(u_action==3){p=mix(p,a_dance_position,u_action_weight);}
  vec4 world=u_model*vec4(p,1.0); v_world_position=world.xyz;
  v_normal=normalize(mat3(u_model)*n); v_uv=a_uv; gl_Position=u_projection*u_view*world;
 })GLSL";
@@ -271,7 +277,8 @@ void Renderer::drawWorld(const Mat4& view,const Mat4& projection,const Vec3& cam
 }
 
 void Renderer::drawLoadout(const CharacterLoadout& loadout,const Mat4& model,const Mat4& view,
-                           const Mat4& projection,const Vec3& camera,float accentMix,float phase,float motion)
+                           const Mat4& projection,const Vec3& camera,float accentMix,float phase,float motion,
+                           int action,float actionWeight)
 {
     glUseProgram(avatarProgram_); setMatrix(avatarProgram_,"u_model",model); setMatrix(avatarProgram_,"u_view",view); setMatrix(avatarProgram_,"u_projection",projection);
     glUniform3f(glGetUniformLocation(avatarProgram_,"u_camera"),camera.x,camera.y,camera.z);
@@ -279,6 +286,8 @@ void Renderer::drawLoadout(const CharacterLoadout& loadout,const Mat4& model,con
     glUniform1f(glGetUniformLocation(avatarProgram_,"u_accent_mix"),accentMix);
     glUniform1f(glGetUniformLocation(avatarProgram_,"u_phase"),phase);
     glUniform1f(glGetUniformLocation(avatarProgram_,"u_motion"),motion);
+    glUniform1i(glGetUniformLocation(avatarProgram_,"u_action"),action);
+    glUniform1f(glGetUniformLocation(avatarProgram_,"u_action_weight"),actionWeight);
     glUniform1i(glGetUniformLocation(avatarProgram_,"u_texture"),0);
 
     for(const CharacterPart& part:loadout.parts()){
@@ -309,7 +318,7 @@ void Renderer::renderClassSelector(const CharacterLoadout& loadout,const M3DSess
     const Mat4 view=linalg::lookat_matrix(camera,Vec3{0,.95f,0},Vec3{0,1,0});const Mat4 projection=linalg::perspective_matrix(51*Pi/180,aspect,.05f,120.f);
     drawWorld(view,projection,camera);const float pulse=1+std::sin(time*3)*.018f;
     const Mat4 model=modelMatrix(Vec3{0,.38f,0},0,loadoutScale(loadout,1.72f)*pulse,loadout.localOffset());
-    drawLoadout(loadout,model,view,projection,camera,.10f,time,0);drawClassSelectorUi(session,width,height);
+    drawLoadout(loadout,model,view,projection,camera,.10f,time,0,0,0);drawClassSelectorUi(session,width,height);
 }
 
 void Renderer::renderCustomizer(const CharacterLoadout& loadout,const M3DSession* session,float time,int width,int height)
@@ -318,7 +327,7 @@ void Renderer::renderCustomizer(const CharacterLoadout& loadout,const M3DSession
     const float aspect=static_cast<float>(width)/std::max(1,height);const Vec3 camera{0,1.75f,4.35f};
     const Mat4 view=linalg::lookat_matrix(camera,Vec3{0,.92f,0},Vec3{0,1,0});const Mat4 projection=linalg::perspective_matrix(48*Pi/180,aspect,.05f,120.f);
     drawWorld(view,projection,camera);const Mat4 model=modelMatrix(Vec3{0,.13f,0},std::sin(time*.35f)*.12f,loadoutScale(loadout,1.72f),loadout.localOffset());
-    drawLoadout(loadout,model,view,projection,camera,.04f,time,0);drawCustomizerUi(session,width,height);
+    drawLoadout(loadout,model,view,projection,camera,.04f,time,0,0,0);drawCustomizerUi(session,width,height);
 }
 
 void Renderer::renderLobby(const CharacterLoadout& loadout,const M3DSession* session,
@@ -329,26 +338,39 @@ void Renderer::renderLobby(const CharacterLoadout& loadout,const M3DSession* ses
     const float aspect=static_cast<float>(width)/std::max(1,height);const Vec3 camera{-1.35f,1.8f,4.7f};
     const Mat4 view=linalg::lookat_matrix(camera,Vec3{-1.35f,.9f,0},Vec3{0,1,0});const Mat4 projection=linalg::perspective_matrix(49*Pi/180,aspect,.05f,120.f);
     drawWorld(view,projection,camera);const Mat4 model=modelMatrix(Vec3{-1.35f,.13f,0},std::sin(time*.35f)*.08f,loadoutScale(loadout,1.72f),loadout.localOffset());
-    drawLoadout(loadout,model,view,projection,camera,.05f,time,0);drawLobbyUi(session,multiplayer,selectedWorld,chatActive,chatInput,width,height);
+    drawLoadout(loadout,model,view,projection,camera,.05f,time,0,0,0);drawLobbyUi(session,multiplayer,selectedWorld,chatActive,chatInput,width,height);
 }
 
 void Renderer::renderWorld(const CharacterLoadout& loadout,const PlayerState& player,
-                           const MultiplayerSnapshot& multiplayer,int selectedWorld,bool chatActive,const std::string& chatInput,
-                           float cameraYaw,float cameraDistance,float time,int width,int height)
+                           const MultiplayerSnapshot& multiplayer,const NpcSystem& npcSystem,int selectedWorld,bool chatActive,const std::string& chatInput,
+                           float cameraYaw,float cameraDistance,int action,float actionTime,float time,int width,int height)
 {
     glViewport(0,0,width,height);glClearColor(worldSkyColor_.x*.42f,worldSkyColor_.y*.42f,worldSkyColor_.z*.42f,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     const float aspect=static_cast<float>(width)/std::max(1,height);const Vec3 forward{std::sin(cameraYaw),0,std::cos(cameraYaw)};
     const Vec3 target=player.position+Vec3{0,.88f,0};const Vec3 camera=target-forward*cameraDistance+Vec3{0,2.25f,0};
     const Mat4 view=linalg::lookat_matrix(camera,target,Vec3{0,1,0});const Mat4 projection=linalg::perspective_matrix(56*Pi/180,aspect,.05f,140.f);
     drawWorld(view,projection,camera);const float motion=clamp(player.speed/2.45f,0,1.72f);const float scale=loadoutScale(loadout,1.72f);
-    const Mat4 model=modelMatrix(player.position,player.yaw,scale,loadout.localOffset());
-    drawLoadout(loadout,model,view,projection,camera,.025f,player.walkPhase,motion);
+    float actionWeight=0.0f;float jumpOffset=0.0f;
+    if(action==1){const float t=clamp(actionTime/2.4f,0,1);actionWeight=std::sin(Pi*t)*(.45f+.55f*std::abs(std::sin(actionTime*7.0f)));}
+    else if(action==2){const float t=clamp(actionTime/2.2f,0,1);actionWeight=std::sin(Pi*t);}
+    else if(action==3){const float t=clamp(actionTime/5.5f,0,1);actionWeight=std::sin(Pi*std::min(1.0f,t*1.4f))*.92f;}
+    else if(action==4){const float t=clamp(actionTime/1.0f,0,1);jumpOffset=std::sin(Pi*t)*.78f;}
+    const Mat4 model=modelMatrix(player.position+Vec3{0,jumpOffset,0},player.yaw,scale,loadout.localOffset());
+    drawLoadout(loadout,model,view,projection,camera,.025f,player.walkPhase,motion,action,actionWeight);
+    int npcIndex=0;
+    for(const auto& npc:npcSystem.npcs()){
+        const Mat4 npcModel=modelMatrix(npc.position,npc.yaw,scale*.96f,loadout.localOffset());
+        const float npcPhase=time*1.2f+static_cast<float>(npcIndex);
+        const int npcAction=(npcIndex++%3)==0?1:0;
+        const float npcActionWeight=npcAction?(.15f+.10f*std::abs(std::sin(time*.8f))):0.0f;
+        drawLoadout(loadout,npcModel,view,projection,camera,.08f,npcPhase,0.0f,npcAction,npcActionWeight);
+    }
     for(const auto& remote:multiplayer.remotePlayers){
         if(remote.world!=selectedWorld)continue;
         const Mat4 remoteModel=modelMatrix(remote.position,remote.yaw,scale,loadout.localOffset());
-        drawLoadout(loadout,remoteModel,view,projection,camera,.12f,remote.phase,clamp(remote.speed/2.45f,0,1.72f));
+        drawLoadout(loadout,remoteModel,view,projection,camera,.12f,remote.phase,clamp(remote.speed/2.45f,0,1.72f),0,0);
     }
-    drawWorldUi(loadout,player,multiplayer,selectedWorld,chatActive,chatInput,width,height);
+    drawWorldUi(loadout,player,multiplayer,npcSystem,selectedWorld,chatActive,chatInput,width,height);
 }
 
 void Renderer::drawClassSelectorUi(const M3DSession* session,int width,int height)
@@ -439,7 +461,7 @@ void Renderer::drawLobbyUi(const M3DSession* session,const MultiplayerSnapshot& 
     ui_.text(panelX+20*s,height-142*s,1.15f*s,"IZQ / DER  MUNDO   T CHAT   ENTER DESPLEGAR",Muted);ui_.text(panelX+20*s,height-115*s,1.15f*s,"ESC  VOLVER AL ESTUDIO",Muted);ui_.flush();
 }
 
-void Renderer::drawWorldUi(const CharacterLoadout& loadout,const PlayerState& player,const MultiplayerSnapshot& multiplayer,int selectedWorld,bool chatActive,const std::string& chatInput,int width,int height)
+void Renderer::drawWorldUi(const CharacterLoadout& loadout,const PlayerState& player,const MultiplayerSnapshot& multiplayer,const NpcSystem& npcSystem,int selectedWorld,bool chatActive,const std::string& chatInput,int width,int height)
 {
     ui_.begin(width,height);const float s=clamp(std::min(width/1280.f,height/720.f),.72f,1.65f);
     ui_.rectangle(18*s,18*s,315*s,82*s,Panel);ui_.outline(18*s,18*s,315*s,82*s,2*s,fromVec3(loadout.accent()));
@@ -449,8 +471,21 @@ void Renderer::drawWorldUi(const CharacterLoadout& loadout,const PlayerState& pl
     ui_.text(205*s,67*s,1.1f*s,std::to_string(multiplayer.members.size())+" EN LOBBY",roleColor(multiplayer.localRole));
     drawChatUi(multiplayer,chatActive,chatInput,width,height,s);
     const float barW=720*s,barX=(width-barW)*.5f,barY=height-50*s;ui_.rectangle(barX,barY,barW,34*s,Panel);
-    ui_.textCentered(width*.5f,barY+10*s,1.3f*s,"WASD / FLECHAS MOVER   SHIFT CORRER   RATÓN MIRAR   T CHAT   ESC LOBBY",Muted);
-    ui_.rectangle(width*.5f-7*s,height*.5f-1*s,14*s,2*s,UiColor{1,1,1,.6f});ui_.rectangle(width*.5f-1*s,height*.5f-7*s,2*s,14*s,UiColor{1,1,1,.6f});ui_.flush();
+    ui_.textCentered(width*.5f,barY+10*s,1.3f*s,"WASD MOVER  SHIFT CORRER  1 SALUDAR  2 CELEBRAR  3 BAILAR  ESPACIO SALTAR",Muted);
+    ui_.rectangle(width*.5f-7*s,height*.5f-1*s,14*s,2*s,UiColor{1,1,1,.6f});ui_.rectangle(width*.5f-1*s,height*.5f-7*s,2*s,14*s,UiColor{1,1,1,.6f});
+    if(npcSystem.dialogue().active){
+        const auto& dialogue=npcSystem.dialogue();const float boxW=620*s,boxX=(width-boxW)*.5f,boxY=height-225*s;
+        ui_.rectangle(boxX,boxY,boxW,130*s,Panel);ui_.outline(boxX,boxY,boxW,130*s,2*s,UiColor{.92f,.70f,.22f,1});
+        ui_.text(boxX+18*s,boxY+16*s,1.8f*s,dialogue.name,UiColor{.92f,.70f,.22f,1});
+        ui_.text(boxX+190*s,boxY+18*s,1.1f*s,dialogue.title,Muted);
+        ui_.text(boxX+18*s,boxY+52*s,1.25f*s,clipped(dialogue.text,74),White);
+        ui_.text(boxX+18*s,boxY+102*s,1.05f*s,"E  SIGUIENTE RESPUESTA   ESC  CERRAR",Muted);
+    }else if(const NpcDefinition* nearby=npcSystem.nearest(player.position);nearby){
+        const std::string prompt="E  HABLAR CON "+nearby->name+" / "+nearby->title;
+        ui_.rectangle((width-520*s)*.5f,height-94*s,520*s,32*s,Panel);
+        ui_.textCentered(width*.5f,height-84*s,1.2f*s,prompt,UiColor{.92f,.70f,.22f,1});
+    }
+    ui_.flush();
 }
 
 bool Renderer::capturePng(const std::filesystem::path& path,int width,int height,std::string& error) const

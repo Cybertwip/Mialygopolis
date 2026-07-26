@@ -251,6 +251,89 @@ void VoxelWorld::generateGreekHeaven()
     setBox(3, 2, 46, 7, 12, 48, 13);
 }
 
+bool VoxelWorld::isCollidable(Cubiquity::MaterialId material) const
+{
+    // Agua, flores y efectos luminosos no bloquean al jugador.
+    return material != 0 && material != 4 && material != 10 && material != 13;
+}
+
+bool VoxelWorld::collidesCapsule(const Vec3& position, float radius, float height,
+                                 std::span<const DynamicCollider> dynamicColliders) const
+{
+    const float playerMinY = position.y + 0.02f;
+    const float playerMaxY = position.y + height;
+    const int minX = static_cast<int>(std::floor((position.x - radius) / VoxelScale));
+    const int maxX = static_cast<int>(std::floor((position.x + radius) / VoxelScale));
+    const int minZ = static_cast<int>(std::floor((position.z - radius) / VoxelScale));
+    const int maxZ = static_cast<int>(std::floor((position.z + radius) / VoxelScale));
+    const int minY = static_cast<int>(std::floor(playerMinY / VoxelScale)) - 1;
+    const int maxY = static_cast<int>(std::floor(playerMaxY / VoxelScale)) + 1;
+    const float half = VoxelScale * 0.5f;
+
+    for (int z = minZ; z <= maxZ; ++z) {
+        for (int y = minY; y <= maxY; ++y) {
+            for (int x = minX; x <= maxX; ++x) {
+                if (!isCollidable(volume_.voxel(x, y, z))) continue;
+                const float blockMinY = y * VoxelScale - half;
+                const float blockMaxY = y * VoxelScale + half;
+                if (playerMaxY <= blockMinY || playerMinY >= blockMaxY) continue;
+                const float blockMinX = x * VoxelScale - half;
+                const float blockMaxX = x * VoxelScale + half;
+                const float blockMinZ = z * VoxelScale - half;
+                const float blockMaxZ = z * VoxelScale + half;
+                const float closestX = std::clamp(position.x, blockMinX, blockMaxX);
+                const float closestZ = std::clamp(position.z, blockMinZ, blockMaxZ);
+                const float dx = position.x - closestX;
+                const float dz = position.z - closestZ;
+                if (dx * dx + dz * dz < radius * radius) return true;
+            }
+        }
+    }
+
+    for (const auto& collider : dynamicColliders) {
+        const float colliderMinY = collider.position.y;
+        const float colliderMaxY = collider.position.y + collider.height;
+        if (playerMaxY <= colliderMinY || playerMinY >= colliderMaxY) continue;
+        const float dx = position.x - collider.position.x;
+        const float dz = position.z - collider.position.z;
+        const float combined = radius + collider.radius;
+        if (dx * dx + dz * dz < combined * combined) return true;
+    }
+    return false;
+}
+
+float VoxelWorld::groundHeight(const Vec3& position, float maxStep) const
+{
+    const int x = static_cast<int>(std::round(position.x / VoxelScale));
+    const int z = static_cast<int>(std::round(position.z / VoxelScale));
+    const int currentY = static_cast<int>(std::floor(position.y / VoxelScale));
+    const int stepVoxels = std::max(1, static_cast<int>(std::ceil(maxStep / VoxelScale)));
+    for (int y = currentY + stepVoxels; y >= currentY - 8; --y) {
+        if (isCollidable(volume_.voxel(x, y, z))) {
+            return (static_cast<float>(y) + 0.5f) * VoxelScale + 0.005f;
+        }
+    }
+    return position.y;
+}
+
+Vec3 VoxelWorld::resolvePlayerMotion(const Vec3& from, const Vec3& proposed,
+                                     float radius, float height,
+                                     std::span<const DynamicCollider> dynamicColliders) const
+{
+    Vec3 result = from;
+    Vec3 candidate = result;
+    candidate.x = proposed.x;
+    if (!collidesCapsule(candidate, radius, height, dynamicColliders)) result.x = candidate.x;
+
+    candidate = result;
+    candidate.z = proposed.z;
+    if (!collidesCapsule(candidate, radius, height, dynamicColliders)) result.z = candidate.z;
+
+    const float floor = groundHeight(result);
+    if (std::abs(floor - result.y) <= 0.55f) result.y = floor;
+    return result;
+}
+
 void VoxelWorld::finishGeneration()
 {
     volume_.bake();

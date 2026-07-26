@@ -1,0 +1,14 @@
+{
+  "platform": "native",
+  "renderer": "opengl_3_3",
+  "window": "sdl2",
+  "multiplayer_transport": "tcp_jsonl",
+  "npc_inference_config": "source/ai/inference.json",
+  "emscripten": {
+    "enabled": false,
+    "future_renderer": "webgl2",
+    "future_multiplayer_transport": "websocket",
+    "future_binding": "c_api_or_embind",
+    "preload_generated_assets": true
+  }
+}

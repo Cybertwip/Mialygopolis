@@ -1,0 +1,16 @@
+{
+  "runtime_bindings": [
+    {"id":"idle","source":"VRM neutral pose","trigger":"automatic"},
+    {"id":"walk","source":"CharacterStudio/lora-assets/animations/Walking.fbx","trigger":"movement"},
+    {"id":"run","source":"CharacterStudio/lora-assets/animations/Running.fbx","trigger":"shift + movement"},
+    {"id":"wave","source":"CharacterStudio/sprite-atlas-assets/animations/Waving.fbx","trigger":"1"},
+    {"id":"cheer","source":"CharacterStudio/sprite-atlas-assets/animations/Cheering.fbx","trigger":"2"},
+    {"id":"dance","source":"CharacterStudio/sprite-atlas-assets/animations/Dancing.fbx","trigger":"3"},
+    {"id":"jump","source":"kinematic root arc","trigger":"space"}
+  ],
+  "available_for_future_binding": [
+    "Boxing", "Punching", "Salute", "Pointing", "SittingIdle", "Threatening",
+    "Taunt", "Taunt2", "Taunt3", "Floating", "Backflip", "CapoeiraMixamo",
+    "Twist_Dance", "Typing", "Clapping", "Sadness", "Terrified"
+  ]
+}

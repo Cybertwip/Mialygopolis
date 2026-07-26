@@ -24,8 +24,14 @@ struct AvatarVertex
     float runANormal[3];
     float runBPosition[3];
     float runBNormal[3];
+    float wavePosition[3];
+    float waveNormal[3];
+    float cheerPosition[3];
+    float cheerNormal[3];
+    float dancePosition[3];
+    float danceNormal[3];
 };
-static_assert(sizeof(AvatarVertex) == sizeof(float) * 32);
+static_assert(sizeof(AvatarVertex) == sizeof(float) * 50);
 
 struct AvatarPrimitive
 {

@@ -26,7 +26,7 @@ ASSET_MAGIC = b"M3A2"
 ASSET_VERSION = 2
 CATALOG_MAGIC = b"M3C1"
 CATALOG_VERSION = 1
-POSE_NAMES = ("idle", "walkA", "walkB", "runA", "runB")
+POSE_NAMES = ("idle", "walkA", "walkB", "runA", "runB", "wave", "cheer", "dance")
 
 COMPONENT_FORMATS = {
     5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2),
@@ -433,19 +433,33 @@ class AnimationClip:
         return {"rotations": rotations, "hips_ratio": hips_ratio}
 
 
-def build_animation_samples(assimp: Path, animation_root: Path, work_dir: Path) -> dict[str, dict[str, Any]]:
+def build_animation_samples(assimp: Path, animation_root: Path, pose_animation_root: Path,
+                            work_dir: Path) -> dict[str, dict[str, Any]]:
     samples: dict[str, dict[str, Any]] = {}
-    for clip_name, filename in (("walk", "Walking.fbx"), ("run", "Running.fbx")):
-        output = work_dir / f"{clip_name}.gltf"
-        command = [str(assimp), "export", str(animation_root / filename), str(output), "-f", "gltf2"]
+
+    def load_clip(key: str, root: Path, filename: str) -> AnimationClip:
+        output = work_dir / f"{key}.gltf"
+        command = [str(assimp), "export", str(root / filename), str(output), "-f", "gltf2"]
         result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
             raise RuntimeError(f"Assimp could not convert {filename}: {result.stderr.strip()}")
         doc, buffers = parse_gltf(output)
         clip = AnimationClip(doc, buffers)
+        print(f"Animation {filename}: {clip.duration:.3f}s, {len(clip.channels)} channels")
+        return clip
+
+    for clip_name, filename in (("walk", "Walking.fbx"), ("run", "Running.fbx")):
+        clip = load_clip(clip_name, animation_root, filename)
         samples[f"{clip_name}A"] = clip.humanoid_sample(0.20)
         samples[f"{clip_name}B"] = clip.humanoid_sample(0.70)
-        print(f"Animation {filename}: {clip.duration:.3f}s, {len(clip.channels)} channels")
+
+    for key, filename, sample_time in (
+        ("wave", "Waving.fbx", 0.55),
+        ("cheer", "Cheering.fbx", 0.48),
+        ("dance", "Dancing.fbx", 0.32),
+    ):
+        clip = load_clip(key, pose_animation_root, filename)
+        samples[key] = clip.humanoid_sample(sample_time)
     return samples
 
 
@@ -549,6 +563,9 @@ def extract_vrm(path: Path, label: str, animation_samples: dict[str, dict[str, A
         "walkB": retarget_globals(doc, animation_samples["walkB"]),
         "runA": retarget_globals(doc, animation_samples["runA"]),
         "runB": retarget_globals(doc, animation_samples["runB"]),
+        "wave": retarget_globals(doc, animation_samples["wave"]),
+        "cheer": retarget_globals(doc, animation_samples["cheer"]),
+        "dance": retarget_globals(doc, animation_samples["dance"]),
     }
     rest_globals = scene_globals(doc)
     primitives: list[dict[str, Any]] = []
@@ -628,11 +645,11 @@ def write_asset(path: Path, primitives: list[dict[str, Any]]) -> tuple[list[floa
             indices = primitive["indices"]
             image = primitive["image"]
             label = primitive["label"].encode()
-            if len(vertices) % 32:
+            if len(vertices) % 50:
                 raise ValueError("Internal vertex packing error")
-            vertex_count = len(vertices) // 32
+            vertex_count = len(vertices) // 50
             for vertex in range(vertex_count):
-                base = vertex * 32
+                base = vertex * 50
                 for component in range(3):
                     bounds_min[component] = min(bounds_min[component], vertices[base + component])
                     bounds_max[component] = max(bounds_max[component], vertices[base + component])
@@ -833,14 +850,16 @@ def write_catalog(path: Path, catalog: list[dict[str, Any]]) -> None:
 
 
 def convert(config_path: Path, asset_root: Path, animation_root: Path,
-            assimp: Path, output_dir: Path) -> None:
+            pose_animation_root: Path, assimp: Path, output_dir: Path) -> None:
     config = json.loads(config_path.read_text(encoding="utf-8"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="m3d-animations-") as temporary:
+        animation_samples = build_animation_samples(assimp, animation_root, pose_animation_root, Path(temporary))
+    # Keep the last successful runtime assets intact until all source animations
+    # have been validated and converted.
     traits_dir = output_dir / "traits"
     if traits_dir.exists():
         shutil.rmtree(traits_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="m3d-animations-") as temporary:
-        animation_samples = build_animation_samples(assimp, animation_root, Path(temporary))
     catalog = build_catalog(config, asset_root, output_dir, animation_samples)
     write_catalog(output_dir / "catalog.m3c", catalog)
     (output_dir / "catalog.json").write_text(json.dumps({"characters": catalog}, indent=2) + "\n", encoding="utf-8")
@@ -852,11 +871,12 @@ def main() -> None:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--asset-root", type=Path, required=True)
     parser.add_argument("--animation-root", type=Path, required=True)
+    parser.add_argument("--pose-animation-root", type=Path, required=True)
     parser.add_argument("--assimp", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     convert(args.config.resolve(), args.asset_root.resolve(), args.animation_root.resolve(),
-            args.assimp.resolve(), args.output_dir.resolve())
+            args.pose_animation_root.resolve(), args.assimp.resolve(), args.output_dir.resolve())
 
 
 if __name__ == "__main__":

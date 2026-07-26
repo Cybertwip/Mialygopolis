@@ -92,6 +92,7 @@ void m3d_session_select_variant_relative(M3DSession* session, int delta);
 void m3d_session_randomize(M3DSession* session);
 
 void m3d_session_set_move(M3DSession* session, float forward, float strafe, int running, float view_yaw);
+void m3d_session_set_player_position(M3DSession* session, float x, float y, float z);
 void m3d_session_update(M3DSession* session, float delta_seconds);
 
 #ifdef __cplusplus

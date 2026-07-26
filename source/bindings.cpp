@@ -179,6 +179,10 @@ void m3d_session_set_move(M3DSession* session, float forward, float strafe, int 
 {
     if (session) session->value.setMoveInput(forward, strafe, running != 0, viewYaw);
 }
+void m3d_session_set_player_position(M3DSession* session, float x, float y, float z)
+{
+    if (session) session->value.setPlayerPosition({x, y, z});
+}
 void m3d_session_update(M3DSession* session, float deltaSeconds)
 {
     if (session) session->value.update(deltaSeconds);

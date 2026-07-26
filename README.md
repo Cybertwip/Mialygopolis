@@ -25,7 +25,8 @@ La aplicación está completamente en español y actualmente se enfoca en ejecuc
   - accesorios;
   - todas las variantes de textura, color, piel y ojos incluidas.
 - Restricciones de prendas incompatibles tomadas de los manifiestos.
-- Animación cinemática de caminar y correr derivada de los FBX incluidos en CharacterStudio.
+- Animaciones FBX enlazadas: caminar, correr, saludar, celebrar y bailar; salto cinemático adicional.
+- Colliders de cápsula contra vóxeles, edificios, terreno, NPC y jugadores remotos, con deslizamiento por ejes.
 - Movimiento relativo a la dirección de la cámara/mouse.
 - Caché compartida de mallas y texturas, actualización incremental por categoría y precarga progresiva del roster.
 - Lobby y chat con roles:
@@ -36,6 +37,9 @@ La aplicación está completamente en español y actualmente se enfoca en ejecuc
 - Visualización de jugadores remotos dentro del mundo seleccionado.
 - Ciudad Romana predeterminada con foro, templo, basílica, murallas, villas, fuente, estatuas, cipreses y acueducto.
 - Cielo Griego con templos del Olimpo, jardines, laureles, cascadas, nubes de mármol, portales e islas flotantes.
+- Ocho NPC iniciales —cuatro por mundo— con colliders, interacción por proximidad y textos provisionales.
+- Callback nativo y contrato Go preparados para inferencia futura de diálogo; deshabilitados por defecto.
+- Configuración preliminar de Emscripten documentada, sin habilitar todavía ningún objetivo web.
 - En macOS, la entrada de texto/IME solo se activa al abrir el chat, evitando el menú de acentos al mantener una tecla de movimiento.
 
 ## Dependencias locales
@@ -99,8 +103,13 @@ La primera compilación genera en `build/generated/assets` un catálogo nativo y
 - `Shift`: correr.
 - Botón derecho + mouse: orientar la cámara.
 - Rueda: zoom.
+- `1`: saludar.
+- `2`: celebrar.
+- `3`: bailar.
+- `Espacio`: saltar.
+- `E`: hablar con un NPC cercano o pedir otra respuesta provisional.
 - `T`: chat.
-- `Esc`: regresar al lobby.
+- `Esc`: cerrar el diálogo o regresar al lobby.
 
 ## Servidor multijugador
 
@@ -145,6 +154,29 @@ Comandos del chat:
 - `/role nombre admin|moderator|gamer` — solo administrador.
 
 > El servidor es un prototipo local. Antes de exponerlo a Internet deben añadirse TLS, autenticación persistente, límites por IP y almacenamiento durable.
+
+## NPC, inferencia futura y Emscripten
+
+Los NPC se definen en `source/npc_system.*`. Cada uno incluye identidad, título, persona para IA, posición, collider y varias respuestas provisionales.
+
+La futura inferencia Go se configura en:
+
+```text
+source/ai/inference.json
+source/server/ai_provider.go
+```
+
+Está deshabilitada y usa los textos provisionales como fallback. `NpcInferenceCallback` permite conectar el cliente nativo a un puente Go sin acoplar el juego a un modelo específico.
+
+La preparación web se encuentra en:
+
+```text
+cmake/EmscriptenPreparation.cmake
+docs/emscripten-preparation.md
+source/config/runtime.json
+```
+
+Estos archivos no se incluyen en el objetivo actual y **no habilitan una compilación Emscripten**.
 
 ## Verificación
 

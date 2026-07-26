@@ -4,6 +4,7 @@
 #include "character_loadout.h"
 #include "glad/glad.h"
 #include "multiplayer_client.h"
+#include "npc_system.h"
 #include "renderer.h"
 #include "voxel_world.h"
 
@@ -97,6 +98,22 @@ int Application::runSmokeTest(const AppOptions& options)
             std::cerr << "La prueba falló: uno de los mundos vóxel no tiene glifos de renderizado\n";
             return 1;
         }
+        NpcSystem smokeNpcs;
+        smokeNpcs.configure(WorldTheme::RomanCity);
+        const auto npcColliders = smokeNpcs.colliders();
+        if (smokeNpcs.npcs().size() < 4 || npcColliders.size() != smokeNpcs.npcs().size()) {
+            std::cerr << "La prueba falló: faltan NPC o sus colliders\n";
+            return 1;
+        }
+        const Vec3 npcPosition = smokeNpcs.npcs().front().position;
+        const Vec3 collisionStart = npcPosition + Vec3{-1.0f, 0.0f, 0.0f};
+        const Vec3 collisionResult = romanWorld.resolvePlayerMotion(
+            collisionStart, npcPosition, 0.28f, 1.68f, npcColliders);
+        if (std::abs(collisionResult.x - npcPosition.x) < 0.2f ||
+            !smokeNpcs.interact(npcPosition) || !smokeNpcs.dialogue().active) {
+            std::cerr << "La prueba falló: física o diálogo de NPC no válido\n";
+            return 1;
+        }
 
         m3d_session_enter_lobby(session.get());
         m3d_session_enter_world(session.get());
@@ -145,6 +162,8 @@ int Application::runInteractive(const AppOptions& options)
         std::cerr << "Falló la generación del mundo: " << exception.what() << "\n";
         return 1;
     }
+    NpcSystem npcSystem;
+    npcSystem.configure(static_cast<WorldTheme>(loadedWorld));
 
     // Keep Cocoa/IME text services disabled during gameplay. On macOS this
     // prevents the accent/alternate-character popover from appearing while a
@@ -223,6 +242,8 @@ int Application::runInteractive(const AppOptions& options)
 
     bool running = true, rightMouseDown = false;
     float cameraYaw = 0.0f, cameraDistance = 4.6f;
+    int activeAction = 0;
+    float actionTime = 0.0f;
     int renderedFrames = 0;
     const auto startTime = std::chrono::steady_clock::now();
     auto previousTime = startTime;
@@ -292,10 +313,23 @@ int Application::runInteractive(const AppOptions& options)
                     else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d) selectedWorld = (selectedWorld + 1) % WorldThemeCount;
                     else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_SPACE) m3d_session_enter_world(session.get());
                     else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_BACKSPACE) m3d_session_return_to_customizer(session.get());
-                } else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_TAB) {
-                    m3d_session_enter_lobby(session.get());
-                    rightMouseDown = false;
-                    SDL_SetRelativeMouseMode(SDL_FALSE);
+                } else {
+                    if (event.key.keysym.sym == SDLK_1) { activeAction = 1; actionTime = 0.0f; }
+                    else if (event.key.keysym.sym == SDLK_2) { activeAction = 2; actionTime = 0.0f; }
+                    else if (event.key.keysym.sym == SDLK_3) { activeAction = 3; actionTime = 0.0f; }
+                    else if (event.key.keysym.sym == SDLK_SPACE) { activeAction = 4; actionTime = 0.0f; }
+                    else if (event.key.keysym.sym == SDLK_e) {
+                        (void)npcSystem.interact(playerState(session.get()).position);
+                    } else if (event.key.keysym.sym == SDLK_ESCAPE && npcSystem.dialogue().active) {
+                        npcSystem.closeDialogue();
+                    } else if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_TAB) {
+                        npcSystem.closeDialogue();
+                        activeAction = 0;
+                        actionTime = 0.0f;
+                        m3d_session_enter_lobby(session.get());
+                        rightMouseDown = false;
+                        SDL_SetRelativeMouseMode(SDL_FALSE);
+                    }
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
@@ -365,6 +399,7 @@ int Application::runInteractive(const AppOptions& options)
                     running = false;
                 }
                 loadedWorld = selectedWorld;
+                npcSystem.configure(static_cast<WorldTheme>(loadedWorld));
             } catch (const std::exception& exception) {
                 std::cerr << "No se pudo generar el mundo: " << exception.what() << "\n";
                 running = false;
@@ -384,6 +419,11 @@ int Application::runInteractive(const AppOptions& options)
         float delta = clamp(std::chrono::duration<float>(now - previousTime).count(), 0.0f, 0.05f);
         previousTime = now;
         if (options.demoMovement && !options.screenshotPath.empty()) delta = std::max(delta, 1.0f / 30.0f);
+        if (activeAction != 0) {
+            actionTime += delta;
+            const float duration = activeAction == 1 ? 2.4f : (activeAction == 2 ? 2.2f : (activeAction == 3 ? 5.5f : 1.0f));
+            if (actionTime >= duration) { activeAction = 0; actionTime = 0.0f; }
+        }
         const Uint8* keys = SDL_GetKeyboardState(nullptr);
         float forward = 0.0f, strafe = 0.0f;
         if (m3d_session_mode(session.get()) == 3 && !chatActive) {
@@ -394,10 +434,22 @@ int Application::runInteractive(const AppOptions& options)
             if (options.demoMovement) forward = 1.0f;
         }
         const bool runInput = keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT] || options.demoMovement;
+        const PlayerState beforePhysics = playerState(session.get());
         m3d_session_set_move(session.get(), forward, strafe, runInput ? 1 : 0, cameraYaw);
         m3d_session_update(session.get(), delta);
 
         const MultiplayerSnapshot network = multiplayer.snapshot();
+        if (m3d_session_mode(session.get()) == 3) {
+            std::vector<DynamicCollider> dynamicColliders = npcSystem.colliders();
+            for (const auto& remote : network.remotePlayers) {
+                if (remote.world == selectedWorld) dynamicColliders.push_back({remote.position, 0.30f, 1.7f});
+            }
+            const PlayerState proposed = playerState(session.get());
+            const Vec3 corrected = worlds[static_cast<std::size_t>(loadedWorld)]->resolvePlayerMotion(
+                beforePhysics.position, proposed.position, 0.28f, 1.68f, dynamicColliders);
+            m3d_session_set_player_position(session.get(), corrected.x, corrected.y, corrected.z);
+        }
+
         networkAccumulator += delta;
         if (m3d_session_mode(session.get()) == 3 && network.status == NetworkStatus::Connected && networkAccumulator >= 0.10f) {
             const PlayerState local = playerState(session.get());
@@ -414,8 +466,9 @@ int Application::runInteractive(const AppOptions& options)
         if (mode == 0) renderer.renderClassSelector(loadout, session.get(), m3d_session_selector_time(session.get()), drawableWidth, drawableHeight);
         else if (mode == 1) renderer.renderCustomizer(loadout, session.get(), m3d_session_selector_time(session.get()), drawableWidth, drawableHeight);
         else if (mode == 2) renderer.renderLobby(loadout, session.get(), network, selectedWorld, chatActive, chatInput, elapsed, drawableWidth, drawableHeight);
-        else renderer.renderWorld(loadout, playerState(session.get()), network, selectedWorld, chatActive, chatInput,
-                                  cameraYaw, cameraDistance, elapsed, drawableWidth, drawableHeight);
+        else renderer.renderWorld(loadout, playerState(session.get()), network, npcSystem, selectedWorld, chatActive, chatInput,
+                                  cameraYaw, cameraDistance, activeAction, actionTime,
+                                  elapsed, drawableWidth, drawableHeight);
 
         if (!options.screenshotPath.empty() && renderedFrames >= (options.demoMovement ? 30 : 6)) {
             if (!renderer.capturePng(options.screenshotPath, drawableWidth, drawableHeight, error)) std::cerr << error << "\n";

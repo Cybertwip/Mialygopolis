@@ -20,6 +20,7 @@ set(GENERATED_ASSET_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/assets")
 set(AVATAR_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}/source/avatar_presets.json")
 set(AVATAR_CONVERTER "${CMAKE_CURRENT_SOURCE_DIR}/source/tools/build_avatar_assets.py")
 set(CHARACTER_STUDIO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/CharacterStudio")
+set(POSE_ANIMATION_ROOT "${CHARACTER_STUDIO_ROOT}/public/sprite-atlas-assets/animations")
 
 file(GLOB_RECURSE CHARACTER_ASSET_INPUTS CONFIGURE_DEPENDS
     "${CHARACTER_ASSET_ROOT}/*.vrm"
@@ -30,7 +31,8 @@ set(GENERATED_AVATARS
     "${GENERATED_ASSET_DIR}/catalog.json")
 
 file(GLOB ANIMATION_INPUTS CONFIGURE_DEPENDS
-    "${CHARACTER_STUDIO_ROOT}/public/lora-assets/animations/*.fbx")
+    "${CHARACTER_STUDIO_ROOT}/public/lora-assets/animations/*.fbx"
+    "${POSE_ANIMATION_ROOT}/*.fbx")
 
 add_custom_command(
     OUTPUT ${GENERATED_AVATARS}
@@ -39,6 +41,7 @@ add_custom_command(
             --config "${AVATAR_CONFIG}"
             --asset-root "${CHARACTER_ASSET_ROOT}"
             --animation-root "${CHARACTER_STUDIO_ROOT}/public/lora-assets/animations"
+            --pose-animation-root "${POSE_ANIMATION_ROOT}"
             --assimp "${ASSIMP_CLI}"
             --output-dir "${GENERATED_ASSET_DIR}"
     DEPENDS "${AVATAR_CONVERTER}" "${AVATAR_CONFIG}" ${CHARACTER_ASSET_INPUTS} ${ANIMATION_INPUTS}
@@ -69,6 +72,7 @@ add_executable(Mialygopolis3D
     source/character_loadout.cpp
     source/game_session.cpp
     source/multiplayer_client.cpp
+    source/npc_system.cpp
     source/renderer.cpp
     source/ui_renderer.cpp
     source/voxel_world.cpp

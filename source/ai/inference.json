@@ -1,0 +1,21 @@
+{
+  "enabled": false,
+  "provider": "go_bridge",
+  "transport": "tcp_jsonl",
+  "endpoint": "127.0.0.1:7788",
+  "protocol_version": 1,
+  "connect_timeout_ms": 1500,
+  "inference_timeout_ms": 6000,
+  "max_response_bytes": 2048,
+  "fallback": "npc_placeholders",
+  "context": {
+    "include_world": true,
+    "include_npc_persona": true,
+    "include_player_message": true,
+    "include_recent_dialogue_turns": 6
+  },
+  "security": {
+    "shared_token_env": "M3D_AI_BRIDGE_TOKEN",
+    "allow_remote_hosts": false
+  }
+}
